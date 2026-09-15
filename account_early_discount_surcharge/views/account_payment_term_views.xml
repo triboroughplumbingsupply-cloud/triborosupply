@@ -6,16 +6,20 @@
         <field name="inherit_id" ref="account.view_payment_term_form"/>
         <field name="arch" type="xml">
             <!-- Discount deadline: days vs day of next month -->
+            <!-- "2.00 % if paid [within] 10 days"  or  "2.00 % if paid [on or before day] 10 of the following month" -->
             <xpath expr="//span[contains(text(), '% if paid within')]" position="replace">
                 <span invisible="not early_discount"> % if paid </span>
-                <field name="discount_deadline_type" class="oe_inline" style="min-width: 200px" invisible="not early_discount"/>
-                <span invisible="not early_discount or discount_deadline_type != 'days'"> within </span>
-                <span invisible="not early_discount or discount_deadline_type != 'day_of_next_month'"> on or before day </span>
-                <field name="discount_day_of_next_month" class="text-end o_field_highlight o_input oe_inline"
+                <field name="discount_deadline_type" class="w-auto oe_inline mx-1" invisible="not early_discount"/>
+                <field name="discount_day_of_next_month" class="text-end o_field_highlight o_input oe_inline o_pt_compact o_pt_day"
                        invisible="not early_discount or discount_deadline_type != 'day_of_next_month'"/>
+                <span invisible="not early_discount or discount_deadline_type != 'day_of_next_month'"> of the following month</span>
             </xpath>
+            <field name="discount_percentage" position="attributes">
+                <attribute name="class" add="o_pt_compact" separator=" "/>
+            </field>
             <field name="discount_days" position="attributes">
                 <attribute name="invisible">not early_discount or discount_deadline_type != 'days'</attribute>
+                <attribute name="class" add="o_pt_compact o_pt_day" separator=" "/>
             </field>
             <xpath expr="//span[normalize-space(text()) = 'days']" position="attributes">
                 <attribute name="invisible">not early_discount or discount_deadline_type != 'days'</attribute>
@@ -26,7 +30,7 @@
                 <div class="o_field_highlight" name="late_surcharge_box">
                     <field name="late_surcharge"/>
                     <field name="late_surcharge_percentage"
-                           class="text-end o_field_highlight o_input oe_inline"
+                           class="text-end o_field_highlight o_input oe_inline o_pt_compact"
                            invisible="not late_surcharge"/>
                     <span invisible="not late_surcharge"> % of the balance unpaid after the due date</span>
                 </div>

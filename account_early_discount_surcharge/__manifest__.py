@@ -27,6 +27,11 @@ Payment terms extension for customer statements / invoices:
         'views/res_config_settings_views.xml',
         'report/report_invoice.xml',
     ],
+    'assets': {
+        'web.assets_backend': [
+            'account_early_discount_surcharge/static/src/scss/payment_term.scss',
+        ],
+    },
     'post_init_hook': '_set_company_defaults',
     'installable': True,
     'application': False,

@@ -9,8 +9,8 @@ class AccountPaymentTerm(models.Model):
 
     discount_deadline_type = fields.Selection(
         selection=[
-            ('days', 'Days after invoice date'),
-            ('day_of_next_month', 'Day of the following month'),
+            ('days', 'within'),
+            ('day_of_next_month', 'on or before day'),
         ],
         string='Discount Deadline',
         default='days',

@@ -1,0 +1,13 @@
+// Compact inline number inputs on the payment term form
+// ("2.00 % if paid on or before day 10 of the following month").
+// Odoo forces `width: auto !important` on inline fields, which renders a
+// wide default-sized input; give the percentage and day inputs a fixed size.
+.o_form_view .o_field_widget.oe_inline.o_pt_compact,
+.o_form_view .o_field_widget.oe_inline.o_pt_compact > .o_input {
+    width: 5em !important;
+}
+
+.o_form_view .o_field_widget.oe_inline.o_pt_compact.o_pt_day,
+.o_form_view .o_field_widget.oe_inline.o_pt_compact.o_pt_day > .o_input {
+    width: 3.5em !important;
+}
