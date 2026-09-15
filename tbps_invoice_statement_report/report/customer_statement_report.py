@@ -64,11 +64,20 @@ class CustomerStatementReport(models.AbstractModel):
         previous_balance = sum(lines.filtered(lambda line: self._line_date(line) < date_from).mapped('balance'))
         period_lines = lines.filtered(lambda line: date_from <= self._line_date(line) <= date_to)
         service_charges = sum(period_lines.filtered('is_late_surcharge').mapped('balance'))
-        purchases = sum(period_lines.filtered(
-            lambda line: line.move_id.move_type == 'out_invoice' and not line.is_late_surcharge).mapped('balance'))
-        credits = -sum(period_lines.filtered(lambda line: line.move_id.move_type == 'out_refund').mapped('balance'))
-        payments = -sum(period_lines.filtered(
-            lambda line: line.move_id.move_type not in ('out_invoice', 'out_refund')).mapped('balance'))
+        invoice_lines = period_lines.filtered(
+            lambda line: line.move_id.move_type == 'out_invoice' and not line.is_late_surcharge)
+        refund_lines = period_lines.filtered(lambda line: line.move_id.move_type == 'out_refund')
+        payment_lines = period_lines.filtered(
+            lambda line: line.move_id.move_type not in ('out_invoice', 'out_refund')
+            and line.journal_id.type in ('bank', 'cash'))
+        # Anything else (miscellaneous entries on the receivable) counts as a purchase when it
+        # increases the balance and as a credit when it reduces it, so the summary still adds up.
+        other_lines = period_lines - invoice_lines - refund_lines - payment_lines - period_lines.filtered('is_late_surcharge')
+        purchases = sum(invoice_lines.mapped('balance')) + sum(
+            line.balance for line in other_lines if line.balance > 0)
+        credits = -sum(refund_lines.mapped('balance')) - sum(
+            line.balance for line in other_lines if line.balance < 0)
+        payments = -sum(payment_lines.mapped('balance'))
         new_balance = sum(lines.mapped('balance'))
 
         # Open items as of date_to, grouped by journal entry

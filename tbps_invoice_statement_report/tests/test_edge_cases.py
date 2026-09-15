@@ -165,6 +165,12 @@ class TestReportEdgeCases(AccountTestInvoicingCommon):
         s = self._statement(self.partner_a, date(2026, 9, 1), date(2026, 8, 1), date(2026, 8, 31))
         labels = [r['number'] for r in s['rows']]
         self.assertTrue(any(label.startswith('Payment ') for label in labels))
+        self.assertTrue(any(label.startswith('Credit ') for label in labels))
+        self.assertEqual(s['payments'], 200.0)
+        self.assertEqual(s['credits'], 50.0)
+        self.assertEqual(s['new_balance'], 750.0)
+        self.assertAlmostEqual(sum(r['due'] for r in s['rows']), 750.0)
+        # A miscellaneous entry on the receivable is not a payment
         misc = self.env['account.move'].create({
             'move_type': 'entry', 'date': date(2026, 8, 22), 'journal_id': self.company_data['default_journal_misc'].id,
             'line_ids': [
@@ -176,11 +182,11 @@ class TestReportEdgeCases(AccountTestInvoicingCommon):
         s = self._statement(self.partner_a, date(2026, 9, 1), date(2026, 8, 1), date(2026, 8, 31))
         labels = [r['number'] for r in s['rows']]
         self.assertIn('Entry %s' % misc.name, labels)
-        self.assertTrue(any(label.startswith('Credit ') for label in labels))
-        self.assertEqual(s['payments'], 200.0)
+        self.assertEqual(s['payments'], 200.0)      # bank/cash journals only
+        self.assertEqual(s['purchases'], 1030.0)    # misc debit counted as a purchase
         self.assertEqual(s['credits'], 50.0)
-        self.assertEqual(s['new_balance'], 750.0)
-        self.assertAlmostEqual(sum(r['due'] for r in s['rows']), 750.0)
+        self.assertEqual(s['new_balance'], 780.0)
+        self.assertAlmostEqual(sum(r['due'] for r in s['rows']), 780.0)
 
     def test_G4_customer_po_number(self):
         inv = self._inv(date(2026, 8, 10), post=False)
