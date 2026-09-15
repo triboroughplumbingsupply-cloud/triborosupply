@@ -9,8 +9,8 @@
             <!-- "2.00 % if paid [within] 10 days"  or  "2.00 % if paid [on or before day] 10 of the following month" -->
             <xpath expr="//span[contains(text(), '% if paid within')]" position="replace">
                 <span invisible="not early_discount"> % if paid </span>
-                <field name="discount_deadline_type" class="w-auto oe_inline mx-1" invisible="not early_discount"/>
-                <field name="discount_day_of_next_month" class="text-end o_field_highlight o_input oe_inline o_pt_compact o_pt_day"
+                <field name="discount_deadline_type" class="oe_inline o_pt_select" invisible="not early_discount"/>
+                <field name="discount_day_of_next_month" class="o_field_highlight o_input oe_inline o_pt_compact o_pt_day ms-1"
                        invisible="not early_discount or discount_deadline_type != 'day_of_next_month'"/>
                 <span invisible="not early_discount or discount_deadline_type != 'day_of_next_month'"> of the following month</span>
             </xpath>
@@ -19,14 +19,15 @@
             </field>
             <field name="discount_days" position="attributes">
                 <attribute name="invisible">not early_discount or discount_deadline_type != 'days'</attribute>
-                <attribute name="class" add="o_pt_compact o_pt_day" separator=" "/>
+                <attribute name="class" add="o_pt_compact o_pt_day ms-1" separator=" "/>
+                <attribute name="class" remove="text-end" separator=" "/>
             </field>
             <xpath expr="//span[normalize-space(text()) = 'days']" position="attributes">
                 <attribute name="invisible">not early_discount or discount_deadline_type != 'days'</attribute>
             </xpath>
             <!-- Late surcharge -->
             <xpath expr="//div[hasclass('o_field_highlight')][1]" position="after">
-                <label for="late_surcharge"/>
+                <label for="late_surcharge" string="Late Surcharge"/>
                 <div class="o_field_highlight" name="late_surcharge_box">
                     <field name="late_surcharge"/>
                     <field name="late_surcharge_percentage"

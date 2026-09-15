@@ -11,3 +11,10 @@
 .o_form_view .o_field_widget.oe_inline.o_pt_compact.o_pt_day > .o_input {
     width: 3.5em !important;
 }
+
+// The deadline selector ("within" / "on or before day") is a text-like dropdown;
+// size it to its longest option instead of the default input width.
+.o_form_view .o_field_widget.oe_inline.o_pt_select,
+.o_form_view .o_field_widget.oe_inline.o_pt_select .o_input {
+    width: 9.5em !important;
+}
