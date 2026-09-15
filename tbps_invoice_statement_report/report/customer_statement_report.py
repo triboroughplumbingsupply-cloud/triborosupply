@@ -92,8 +92,12 @@ class CustomerStatementReport(models.AbstractModel):
                 label = _("Credit %s", move.name)
                 po = ''
                 amount = currency.round(amount_by_move[move])
-            else:
+            elif move.journal_id.type in ('bank', 'cash'):
                 label = _("Payment %s", move.name)
+                po = ''
+                amount = residual
+            else:
+                label = _("Entry %s", move.name)
                 po = ''
                 amount = residual
             rows.append({

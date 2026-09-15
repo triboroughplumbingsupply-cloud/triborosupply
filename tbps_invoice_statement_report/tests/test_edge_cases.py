@@ -165,6 +165,17 @@ class TestReportEdgeCases(AccountTestInvoicingCommon):
         s = self._statement(self.partner_a, date(2026, 9, 1), date(2026, 8, 1), date(2026, 8, 31))
         labels = [r['number'] for r in s['rows']]
         self.assertTrue(any(label.startswith('Payment ') for label in labels))
+        misc = self.env['account.move'].create({
+            'move_type': 'entry', 'date': date(2026, 8, 22), 'journal_id': self.company_data['default_journal_misc'].id,
+            'line_ids': [
+                Command.create({'account_id': self.company_data['default_account_receivable'].id,
+                                'partner_id': self.partner_a.id, 'debit': 30.0}),
+                Command.create({'account_id': self.company_data['default_account_revenue'].id, 'credit': 30.0}),
+            ]})
+        misc.action_post()
+        s = self._statement(self.partner_a, date(2026, 9, 1), date(2026, 8, 1), date(2026, 8, 31))
+        labels = [r['number'] for r in s['rows']]
+        self.assertIn('Entry %s' % misc.name, labels)
         self.assertTrue(any(label.startswith('Credit ') for label in labels))
         self.assertEqual(s['payments'], 200.0)
         self.assertEqual(s['credits'], 50.0)
