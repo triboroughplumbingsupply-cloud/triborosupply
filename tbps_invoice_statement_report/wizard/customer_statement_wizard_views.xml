@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_customer_statement_wizard_form" model="ir.ui.view">
+        <field name="name">tbps.customer.statement.wizard.form</field>
+        <field name="model">tbps.customer.statement.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Customer Statement">
+                <group>
+                    <group>
+                        <field name="partner_ids" widget="many2many_tags" placeholder="All customers with a balance"/>
+                        <field name="include_zero_balance"/>
+                    </group>
+                    <group>
+                        <field name="statement_date"/>
+                        <field name="date_from" required="1"/>
+                        <field name="date_to" required="1"/>
+                    </group>
+                </group>
+                <footer>
+                    <button name="action_print" string="Print" type="object" class="btn-primary" data-hotkey="q"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel" data-hotkey="x"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- Accounting > Customers > Customer Statements -->
+    <record id="action_customer_statement_wizard" model="ir.actions.act_window">
+        <field name="name">Customer Statements</field>
+        <field name="res_model">tbps.customer.statement.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+    <menuitem id="menu_customer_statement" name="Customer Statements"
+              parent="account.menu_finance_receivables" action="action_customer_statement_wizard" sequence="60"/>
+
+    <!-- Action menu on customers (list and form) -->
+    <record id="action_partner_print_statement" model="ir.actions.server">
+        <field name="name">Print Customer Statement</field>
+        <field name="model_id" ref="base.model_res_partner"/>
+        <field name="binding_model_id" ref="base.model_res_partner"/>
+        <field name="binding_view_types">list,form</field>
+        <field name="state">code</field>
+        <field name="code">action = records.action_print_customer_statement()</field>
+    </record>
+</odoo>

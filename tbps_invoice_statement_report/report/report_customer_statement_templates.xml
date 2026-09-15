@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="report_customer_statement">
+        <t t-call="web.html_container">
+            <t t-set="cur" t-value="{'widget': 'monetary', 'display_currency': currency}"/>
+            <t t-foreach="statements" t-as="s">
+                <t t-set="partner" t-value="s['partner']"/>
+                <div class="article o_tbps_statement" t-att-data-oe-model="partner._name" t-att-data-oe-id="partner.id">
+                    <style>
+                        .o_tbps_statement { font-size: 12px; page-break-after: always; }
+                        .o_tbps_statement:last-child { page-break-after: auto; }
+                        .o_tbps_statement .o_tbps_box { border: 1px solid #000; padding: 6px 8px; }
+                        .o_tbps_statement table.o_tbps_grid { border-collapse: collapse; width: 100%; }
+                        .o_tbps_statement table.o_tbps_grid th, .o_tbps_statement table.o_tbps_grid td { border: 1px solid #000; padding: 4px 6px; }
+                        .o_tbps_statement table.o_tbps_grid th { background: #eee; font-weight: bold; text-align: center; font-size: 11px; }
+                        .o_tbps_statement .o_tbps_title { font-size: 24px; font-weight: bold; letter-spacing: 1px; }
+                        .o_tbps_statement .o_tbps_label { font-weight: bold; }
+                    </style>
+
+                    <!-- Header -->
+                    <div class="row">
+                        <div class="col-6">
+                            <img t-if="company.logo" t-att-src="image_data_uri(company.logo)" style="max-height: 90px; max-width: 200px;" alt="Logo"/>
+                            <div class="o_tbps_box mt-2" style="min-height: 110px;">
+                                <div class="o_tbps_label">CUSTOMER:</div>
+                                <div class="mt-2 ms-2">
+                                    <div t-out="partner.name"/>
+                                    <div t-if="partner.street" t-out="partner.street"/>
+                                    <div t-if="partner.street2" t-out="partner.street2"/>
+                                    <div><t t-out="partner.city"/><t t-if="partner.city and partner.state_id">, </t><t t-out="partner.state_id.code"/> <t t-out="partner.zip"/></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="o_tbps_title text-end">STATEMENT</div>
+                            <table class="w-100 mt-2">
+                                <tr>
+                                    <td class="o_tbps_label">STATEMENT DATE:&#160;<span class="fw-normal" t-out="statement_date" t-options='{"widget": "date"}'/></td>
+                                    <td class="o_tbps_label text-end">CUSTOMER #:&#160;<span class="fw-normal" t-out="s['customer_no']"/></td>
+                                </tr>
+                            </table>
+                            <div class="o_tbps_box mt-2">
+                                <div class="o_tbps_label">REMIT TO:</div>
+                                <div class="ms-2">
+                                    <div t-out="company.name"/>
+                                    <div><t t-out="company.street"/><t t-if="company.street2">, <t t-out="company.street2"/></t><t t-if="company.city">, <t t-out="company.city"/></t><t t-if="company.state_id">, <t t-out="company.state_id.code"/></t> <t t-out="company.zip"/></div>
+                                    <div t-if="company.phone">P: <t t-out="company.phone"/></div>
+                                    <div t-if="company.email">E: <t t-out="company.email"/></div>
+                                </div>
+                            </div>
+                            <div class="mt-2"><span class="o_tbps_label">TERMS:</span>&#160;<span t-out="s['terms_name']"/></div>
+                            <div class="mt-1 fst-italic" t-if="company.tbps_statement_note" t-out="company.tbps_statement_note"/>
+                        </div>
+                    </div>
+
+                    <!-- Open items -->
+                    <table class="o_tbps_grid mt-3">
+                        <thead>
+                            <tr>
+                                <th style="width: 14%;">DATE</th>
+                                <th style="width: 26%;">INVOICE NUMBER</th>
+                                <th style="width: 24%;">CUSTOMER PO NUMBER</th>
+                                <th style="width: 18%;">INVOICE AMOUNT</th>
+                                <th style="width: 18%;">AMOUNT DUE</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="s['rows']" t-as="r">
+                                <td class="text-center" t-out="r['date']" t-options='{"widget": "date"}'/>
+                                <td t-out="r['number']"/>
+                                <td t-out="r['po']"/>
+                                <td class="text-end" t-out="r['amount']" t-options="cur"/>
+                                <td class="text-end" t-out="r['due']" t-options="cur"/>
+                            </tr>
+                            <tr t-if="not s['rows']"><td colspan="5" class="text-center text-muted">No open items</td></tr>
+                            <t t-foreach="range(max(0, 12 - len(s['rows'])))" t-as="i">
+                                <tr><td>&#160;</td><td/><td/><td/><td/></tr>
+                            </t>
+                        </tbody>
+                    </table>
+
+                    <!-- Summary -->
+                    <table class="o_tbps_grid mt-3">
+                        <thead>
+                            <tr>
+                                <th>PREVIOUS BALANCE</th><th>PAYMENTS</th><th>CREDIT</th>
+                                <th>NET PURCHASES</th><th>SERVICE CHARGES</th><th>NEW BALANCE</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="text-end" t-out="s['previous_balance']" t-options="cur"/>
+                                <td class="text-end" t-out="s['payments']" t-options="cur"/>
+                                <td class="text-end" t-out="s['credits']" t-options="cur"/>
+                                <td class="text-end" t-out="s['purchases']" t-options="cur"/>
+                                <td class="text-end" t-out="s['service_charges']" t-options="cur"/>
+                                <td class="text-end fw-bold" t-out="s['new_balance']" t-options="cur"/>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <!-- Aging -->
+                    <table class="o_tbps_grid mt-3">
+                        <thead>
+                            <tr><t t-foreach="s['aging']" t-as="bucket"><th t-out="bucket[0]"/></t></tr>
+                        </thead>
+                        <tbody>
+                            <tr><t t-foreach="s['aging']" t-as="bucket"><td class="text-end" t-out="bucket[1]" t-options="cur"/></t></tr>
+                        </tbody>
+                    </table>
+
+                    <!-- Footer block -->
+                    <div class="row mt-4">
+                        <div class="col-7">
+                            <table class="w-100">
+                                <tr><td class="o_tbps_label" style="width: 45%;">ACCOUNT NUMBER:</td><td t-out="s['customer_no']"/></tr>
+                                <tr t-if="s['discount_percentage']">
+                                    <td class="o_tbps_label">DEDUCT (<t t-out="'%g' % s['discount_percentage']"/>%):</td>
+                                    <td t-out="s['discount_total']" t-options="cur"/>
+                                </tr>
+                                <tr class="fw-bold" style="font-size: 14px;">
+                                    <td>TOTAL AMOUNT DUE:</td>
+                                    <td t-out="s['total_due']" t-options="cur"/>
+                                </tr>
+                            </table>
+                            <div class="mt-2 fw-bold" t-if="s['discount_percentage'] and s['discount_total'] and s['discount_date']">
+                                Pay by check by <t t-out="s['discount_date']" t-options='{"widget": "date"}'/> and save <t t-out="'%g' % s['discount_percentage']"/>%
+                            </div>
+                        </div>
+                        <div class="col-5 text-end">
+                            <div class="o_tbps_label" t-if="s['surcharge_percentage']">
+                                <t t-out="'%g' % s['surcharge_percentage']"/>% SERVICE CHARGE ON UNPAID BALANCE
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </t>
+    </template>
+</odoo>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form_inherit_tbps" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.tbps.reports</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="account_early_discount_surcharge.res_config_settings_view_form_inherit_surcharge"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='late_surcharge_method']/ancestor::setting[1]" position="after">
+                <setting string="Tri Borough documents:" help="Invoice layout and customer statement wording">
+                    <div class="content-group">
+                        <div class="row mt8">
+                            <field name="tbps_invoice_layout" class="col-lg-1"/>
+                            <label for="tbps_invoice_layout" class="col-lg-9 o_light_label"/>
+                        </div>
+                        <div class="row mt8">
+                            <label for="tbps_statement_note" class="col-lg-12 o_light_label"/>
+                            <field name="tbps_statement_note" class="col-lg-12"/>
+                        </div>
+                    </div>
+                </setting>
+            </xpath>
+        </field>
+    </record>
+</odoo>

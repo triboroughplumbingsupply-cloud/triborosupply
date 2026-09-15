@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <record id="payment_term_2_10th_net_eom_surcharge" model="account.payment.term">
+        <field name="name">2% by the 10th, Net EOM, 1.5% late</field>
+        <field name="note">2% discount if paid by the 10th of the following month. Full amount due by the end of the following month. A 1.5% surcharge applies to balances unpaid after the due date.</field>
+        <field name="early_discount" eval="True"/>
+        <field name="discount_percentage">2.0</field>
+        <field name="discount_deadline_type">day_of_next_month</field>
+        <field name="discount_day_of_next_month">10</field>
+        <field name="late_surcharge" eval="True"/>
+        <field name="late_surcharge_percentage">1.5</field>
+        <field name="display_on_invoice" eval="True"/>
+        <field name="line_ids" eval="[(5, 0, 0), (0, 0, {
+            'value': 'percent',
+            'value_amount': 100.0,
+            'nb_days': 0,
+            'delay_type': 'days_after_end_of_next_month',
+        })]"/>
+    </record>
+</odoo>

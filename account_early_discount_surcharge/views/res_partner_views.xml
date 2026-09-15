@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_partner_form_inherit_surcharge" model="ir.ui.view">
+        <field name="name">res.partner.form.inherit.early.discount.surcharge</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="account.view_partner_property_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//group[@name='sale']//field[@name='property_payment_term_id']" position="before">
+                <label for="early_discount_surcharge_terms"
+                       groups="account.group_account_invoice,account.group_account_readonly"/>
+                <div class="d-flex align-items-center" name="early_discount_surcharge_terms_box"
+                     groups="account.group_account_invoice,account.group_account_readonly">
+                    <field name="early_discount_surcharge_terms" widget="boolean_toggle" nolabel="1" class="w-auto flex-grow-0"/>
+                    <field name="early_discount_surcharge_term_name" class="w-auto flex-grow-0 ms-2 text-muted" readonly="1" nolabel="1"
+                           invisible="not early_discount_surcharge_term_name"/>
+                </div>
+            </xpath>
+        </field>
+    </record>
+</odoo>

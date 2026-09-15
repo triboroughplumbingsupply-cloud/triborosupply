@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form_inherit_surcharge" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.early.discount.surcharge</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="account.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='account_journal_early_pay_discount_loss_account_id']/ancestor::setting[1]" position="after">
+                <setting string="Early discount / late surcharge terms:"
+                         help="Payment terms applied by the customer toggle, and how surcharge invoices are generated for invoices unpaid after their due date. Rates and deadlines are edited on the payment terms.">
+                    <div class="content-group">
+                        <div class="row mt8">
+                            <label for="early_discount_surcharge_term_id" class="col-lg-5 o_light_label" string="Payment Terms"/>
+                            <field name="early_discount_surcharge_term_id" options="{'no_create': True}"/>
+                        </div>
+                        <div class="row mt8">
+                            <label for="late_surcharge_product_id" class="col-lg-5 o_light_label" string="Surcharge Product"/>
+                            <field name="late_surcharge_product_id"/>
+                        </div>
+                        <div class="row mt8">
+                            <label for="late_surcharge_method" class="col-lg-5 o_light_label" string="Surcharge Method"/>
+                            <field name="late_surcharge_method"/>
+                        </div>
+                        <div class="row mt8" invisible="late_surcharge_method != 'separate_invoice'">
+                            <field name="late_surcharge_auto_post" class="col-lg-1"/>
+                            <label for="late_surcharge_auto_post" class="col-lg-9 o_light_label"/>
+                        </div>
+                    </div>
+                </setting>
+            </xpath>
+        </field>
+    </record>
+</odoo>

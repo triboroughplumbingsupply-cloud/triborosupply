@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <record id="product_late_payment_surcharge" model="product.product">
+        <field name="name">Late Payment Surcharge</field>
+        <field name="type">service</field>
+        <field name="sale_ok" eval="False"/>
+        <field name="purchase_ok" eval="False"/>
+        <field name="list_price">0.0</field>
+        <field name="taxes_id" eval="[(5, 0, 0)]"/>
+        <field name="description_sale">Surcharge applied on balances unpaid after the invoice due date.</field>
+    </record>
+</odoo>

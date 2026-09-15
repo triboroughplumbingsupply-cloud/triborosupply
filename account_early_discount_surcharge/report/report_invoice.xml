@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="report_invoice_document_surcharge" inherit_id="account.report_invoice_document">
+        <!-- The native early-discount line is replaced by the fuller block below when surcharge terms apply -->
+        <xpath expr="//div[@id='early_payment_discount']" position="attributes">
+            <attribute name="t-if">not o.invoice_payment_term_id.late_surcharge</attribute>
+        </xpath>
+        <xpath expr="//p[@name='payment_communication']/.." position="before">
+            <div class="mb-3" name="late_surcharge_terms"
+                 t-if="o.move_type == 'out_invoice' and o.invoice_payment_term_id.late_surcharge">
+                <t t-if="o.invoice_payment_term_id.early_discount and o.early_discount_deadline and not o.late_surcharge_date">
+                    <div>
+                        <strong>Early payment:</strong>
+                        pay <span t-field="o.early_discount_amount_due"/>
+                        on or before <span t-field="o.early_discount_deadline"/>
+                        to receive the <span t-out="'%g' % o.invoice_payment_term_id.discount_percentage"/>% discount.
+                    </div>
+                </t>
+                <div t-if="not o.late_surcharge_date">
+                    <strong>Net:</strong>
+                    full amount <span t-field="o.amount_total"/> due by <span t-field="o.invoice_date_due"/>.
+                </div>
+                <div t-if="not o.late_surcharge_date">
+                    <strong>Late payment:</strong>
+                    a <span t-out="'%g' % o.invoice_payment_term_id.late_surcharge_percentage"/>% surcharge
+                    is added to any balance unpaid after <span t-field="o.invoice_date_due"/>.
+                </div>
+                <div t-if="o.late_surcharge_date">
+                    <strong>Late payment:</strong>
+                    a <span t-out="'%g' % o.invoice_payment_term_id.late_surcharge_percentage"/>% surcharge
+                    of <span t-field="o.late_surcharge_applied_amount"/> was applied on <span t-field="o.late_surcharge_date"/>
+                    because the balance was unpaid after <span t-field="o.invoice_date_due"/>.
+                    Amount now due: <span t-field="o.amount_residual"/>.
+                </div>
+            </div>
+        </xpath>
+    </template>
+</odoo>

@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Hook our layout into the standard invoice report dispatcher -->
+    <template id="report_invoice_tbps" inherit_id="account.report_invoice">
+        <xpath expr="//t[@t-call='account.report_invoice_document']" position="after">
+            <t t-elif="o._get_name_invoice_report() == 'tbps_invoice_statement_report.report_invoice_document_tbps'"
+               t-call="tbps_invoice_statement_report.report_invoice_document_tbps"
+               t-lang="lang"/>
+        </xpath>
+    </template>
+
+    <template id="report_invoice_document_tbps">
+        <t t-set="o" t-value="o.with_context(lang=lang)"/>
+        <t t-set="company" t-value="o.company_id"/>
+        <t t-set="d" t-value="o._tbps_invoice_data()"/>
+        <t t-set="cur" t-value="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
+        <t t-set="title" t-value="'Credit Note' if o.move_type == 'out_refund' else 'Invoice'"/>
+
+        <div class="footer o_tbps_footer">
+            <div class="text-center small" t-if="report_type == 'pdf'">
+                Page <span class="page"/> of <span class="topage"/>
+            </div>
+        </div>
+
+        <div class="article o_tbps_invoice" t-att-data-oe-model="o._name" t-att-data-oe-id="o.id" t-att-data-oe-lang="o.env.context.get('lang')">
+            <style>
+                .o_tbps_invoice { font-size: 13px; }
+                .o_tbps_invoice .o_tbps_rule { border-top: 1px solid #000; margin: 10px 0; }
+                .o_tbps_invoice table.o_tbps_lines th { border-bottom: 1px solid #000; padding: 4px 6px; }
+                .o_tbps_invoice table.o_tbps_lines td { padding: 6px 6px; vertical-align: top; }
+                .o_tbps_invoice .o_tbps_totals td { padding: 5px 4px; }
+                .o_tbps_invoice .o_tbps_barcode { border: 1px dashed #000; padding: 10px; text-align: center; display: inline-block; min-width: 190px; }
+                .o_tbps_invoice h1 { font-size: 26px; font-weight: bold; margin: 0; }
+            </style>
+
+            <!-- Header: logo + document info -->
+            <div class="row">
+                <div class="col-5">
+                    <img t-if="company.logo" t-att-src="image_data_uri(company.logo)" style="max-height: 110px; max-width: 220px;" alt="Logo"/>
+                </div>
+                <div class="col-7 text-end">
+                    <h1 t-out="title">Invoice</h1>
+                    <table class="table table-sm table-borderless mb-0 ms-auto" style="width: 65%; font-size: 13px;">
+                        <tr><td class="text-end fw-bold"><t t-out="title"/> #:</td><td class="text-end" t-out="o.name"/></tr>
+                        <tr><td class="text-end fw-bold"><t t-out="title"/> Date:</td><td class="text-end" t-out="o.invoice_date" t-options='{"widget": "date"}'/></tr>
+                        <tr t-if="d['order_names']"><td class="text-end fw-bold">Order #:</td><td class="text-end" t-out="d['order_names']"/></tr>
+                        <tr t-if="d['order_date']"><td class="text-end fw-bold">Order Date:</td><td class="text-end" t-out="d['order_date']" t-options='{"widget": "date"}'/></tr>
+                        <tr><td class="text-end fw-bold">Source:</td><td class="text-end" t-out="d['source']"/></tr>
+                    </table>
+                </div>
+            </div>
+            <div class="o_tbps_rule"/>
+
+            <!-- Bill To / Ship To -->
+            <div class="row">
+                <div class="col-6">
+                    <div class="fw-bold mb-2">Bill To:</div>
+                    <div t-out="d['bill_to'].commercial_partner_id.name"/>
+                    <div t-if="d['bill_to'] != d['bill_to'].commercial_partner_id and d['bill_to'].name" t-out="d['bill_to'].name"/>
+                    <div t-if="d['bill_to'].street" t-out="d['bill_to'].street"/>
+                    <div t-if="d['bill_to'].street2" t-out="d['bill_to'].street2"/>
+                    <div><t t-out="d['bill_to'].city"/><t t-if="d['bill_to'].city and d['bill_to'].state_id">, </t><t t-out="d['bill_to'].state_id.code"/> <t t-out="d['bill_to'].zip"/></div>
+                    <div t-if="d['bill_to'].phone">Phone #: <t t-out="d['bill_to'].phone"/></div>
+                </div>
+                <div class="col-6">
+                    <div class="fw-bold mb-2">Ship To:</div>
+                    <div t-out="d['ship_to'].commercial_partner_id.name"/>
+                    <div t-if="d['ship_to'] != d['ship_to'].commercial_partner_id and d['ship_to'].name" t-out="d['ship_to'].name"/>
+                    <div t-if="d['ship_to'].street" t-out="d['ship_to'].street"/>
+                    <div t-if="d['ship_to'].street2" t-out="d['ship_to'].street2"/>
+                    <div><t t-out="d['ship_to'].city"/><t t-if="d['ship_to'].city and d['ship_to'].state_id">, </t><t t-out="d['ship_to'].state_id.code"/> <t t-out="d['ship_to'].zip"/></div>
+                    <div t-if="d['ship_to'].phone">Phone #: <t t-out="d['ship_to'].phone"/></div>
+                </div>
+            </div>
+            <div class="o_tbps_rule"/>
+
+            <!-- Customer / shipping details -->
+            <div class="row">
+                <div class="col-4">
+                    <div><span class="fw-bold">Customer #:</span> <t t-out="d['customer_no']"/></div>
+                    <div t-if="d['sales_rep']"><span class="fw-bold">Sales Rep:</span> <t t-out="d['sales_rep']"/></div>
+                </div>
+                <div class="col-4">
+                    <div t-if="d['ship_date']"><span class="fw-bold">Ship Date:</span> <t t-out="d['ship_date']" t-options='{"widget": "date"}'/></div>
+                    <div><span class="fw-bold">Ship From:</span> <t t-out="d['ship_from']"/></div>
+                </div>
+                <div class="col-4">
+                    <div t-if="d['ship_method']"><span class="fw-bold">Ship Method:</span> <t t-out="d['ship_method']"/></div>
+                    <div t-if="o.invoice_payment_term_id"><span class="fw-bold">Terms:</span> <t t-out="o.invoice_payment_term_id.name"/></div>
+                    <div t-if="o.invoice_date_due and o.move_type == 'out_invoice'"><span class="fw-bold">Due Date:</span> <t t-out="o.invoice_date_due" t-options='{"widget": "date"}'/></div>
+                </div>
+            </div>
+            <div class="o_tbps_rule"/>
+
+            <!-- Lines -->
+            <table class="table table-sm table-borderless o_tbps_lines w-100">
+                <thead>
+                    <tr>
+                        <th class="text-start" style="width: 7%;">Qty</th>
+                        <th class="text-start" style="width: 15%;">Item #</th>
+                        <th class="text-start">Description</th>
+                        <th class="text-end" style="width: 13%;">Price</th>
+                        <th class="text-end" style="width: 13%;">Ext Price</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <t t-foreach="o.invoice_line_ids.sorted(lambda l: (l.sequence, l.id))" t-as="line">
+                        <t t-if="line.display_type == 'product' and line in d['item_lines']">
+                            <tr>
+                                <td t-out="line.quantity" t-options='{"widget": "float", "precision": 0 if line.quantity == int(line.quantity) else 2}'/>
+                                <td t-out="line.product_id.default_code or ''"/>
+                                <td>
+                                    <t t-out="line.name"/>
+                                    <span t-if="line.discount" class="text-muted"> (<t t-out="'%g' % line.discount"/>% off)</span>
+                                </td>
+                                <td class="text-end" t-out="line.price_unit" t-options="cur"/>
+                                <td class="text-end" t-out="line.price_subtotal" t-options="cur"/>
+                            </tr>
+                        </t>
+                        <t t-elif="line.display_type in ('line_section', 'line_subsection')">
+                            <tr><td colspan="5" class="fw-bold" t-out="line.name"/></tr>
+                        </t>
+                        <t t-elif="line.display_type == 'line_note'">
+                            <tr><td colspan="5" class="fst-italic" t-out="line.name"/></tr>
+                        </t>
+                    </t>
+                </tbody>
+            </table>
+            <div class="o_tbps_rule"/>
+
+            <!-- Payments + totals -->
+            <div class="row">
+                <div class="col-6">
+                    <div class="fw-bold mb-2">Payments</div>
+                    <table class="table table-sm table-borderless" style="width: 80%;">
+                        <t t-foreach="d['payments']" t-as="p">
+                            <tr>
+                                <td><t t-out="p['name']"/><span t-if="p['date']" class="text-muted"> (<t t-out="p['date']" t-options='{"widget": "date"}'/>)</span></td>
+                                <td class="text-end" t-out="p['amount']" t-options="cur"/>
+                            </tr>
+                        </t>
+                        <tr t-if="not d['payments']"><td class="text-muted">None</td><td/></tr>
+                    </table>
+                </div>
+                <div class="col-6">
+                    <table class="table table-sm table-borderless o_tbps_totals ms-auto" style="width: 70%;">
+                        <tr t-if="d['discounts']"><td>Discounts:</td><td class="text-end" t-out="-d['discounts']" t-options="cur"/></tr>
+                        <tr><td>Items Subtotal:</td><td class="text-end" t-out="d['items_subtotal']" t-options="cur"/></tr>
+                        <t t-foreach="d['tax_groups']" t-as="tg">
+                            <tr><td><t t-out="tg['name']"/>:</td><td class="text-end" t-out="tg['amount']" t-options="cur"/></tr>
+                        </t>
+                        <tr><td>Shipping/Handling:</td><td class="text-end" t-out="d['shipping']" t-options="cur"/></tr>
+                        <tr class="fw-bold"><td>Total:</td><td class="text-end" t-out="o.amount_total" t-options="cur"/></tr>
+                        <tr><td colspan="2" style="border-top: 1px solid #000; padding: 0;"/></tr>
+                        <tr><td>Total Payments:</td><td class="text-end" t-out="d['total_payments']" t-options="cur"/></tr>
+                        <tr class="fw-bold"><td>Balance:</td><td class="text-end" t-out="d['balance']" t-options="cur"/></tr>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Early discount / late surcharge info (from payment terms) -->
+            <div t-if="o.move_type == 'out_invoice' and o.invoice_payment_term_id and (o.invoice_payment_term_id.early_discount or o.invoice_payment_term_id.late_surcharge)" class="mt-2 small">
+                <div t-if="o.invoice_payment_term_id.early_discount and o.early_discount_deadline and not o.late_surcharge_date and o.amount_residual">
+                    <strong>Early payment:</strong> pay <span t-out="o.early_discount_amount_due" t-options="cur"/>
+                    on or before <span t-out="o.early_discount_deadline" t-options='{"widget": "date"}'/>
+                    to receive the <t t-out="'%g' % o.invoice_payment_term_id.discount_percentage"/>% discount.
+                </div>
+                <div t-if="o.invoice_payment_term_id.late_surcharge and not o.late_surcharge_date">
+                    <strong>Late payment:</strong> a <t t-out="'%g' % o.invoice_payment_term_id.late_surcharge_percentage"/>% surcharge
+                    is added to any balance unpaid after <span t-out="o.invoice_date_due" t-options='{"widget": "date"}'/>.
+                </div>
+                <div t-if="o.late_surcharge_date">
+                    <strong>Late payment:</strong> a <t t-out="'%g' % o.invoice_payment_term_id.late_surcharge_percentage"/>% surcharge
+                    of <span t-out="o.late_surcharge_applied_amount" t-options="cur"/> was applied on
+                    <span t-out="o.late_surcharge_date" t-options='{"widget": "date"}'/> because the balance was unpaid after
+                    <span t-out="o.invoice_date_due" t-options='{"widget": "date"}'/>.
+                </div>
+            </div>
+            <div class="o_tbps_rule"/>
+
+            <!-- Terms (return policy) + barcode -->
+            <div class="row">
+                <div class="col-8 small">
+                    <t t-set="terms" t-value="o.narration if not is_html_empty(o.narration) else (company.invoice_terms if company.terms_type == 'plain' else False)"/>
+                    <div t-if="terms and not is_html_empty(terms)" t-out="terms"/>
+                </div>
+                <div class="col-4 text-end">
+                    <div class="o_tbps_barcode">
+                        <img t-att-src="'/report/barcode/?barcode_type=Code128&amp;value=%s&amp;width=300&amp;height=60&amp;humanreadable=0' % o.name" style="width: 170px; height: 40px;" alt="Barcode"/>
+                        <div t-out="o.name"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+</odoo>
