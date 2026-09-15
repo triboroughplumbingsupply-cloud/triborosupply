@@ -255,3 +255,16 @@ class TestReportEdgeCases(AccountTestInvoicingCommon):
         self.assertIn('pending bank reconciliation', d['payments'][0]['name'])
         self.assertEqual(d['total_payments'], 100.0)
         self.assertEqual(d['balance'], 900.0)
+
+    def test_single_payment_on_surcharged_invoice_prints_once(self):
+        inv = self._inv(date(2026, 1, 15))
+        with freeze_time('2026-03-01'):
+            inv.action_apply_late_surcharge()
+            self.env['account.payment.register'].with_context(active_model='account.move', active_ids=inv.ids).create(
+                {'payment_date': date(2026, 3, 1)})._create_payments()
+        self.assertEqual(inv.payment_state, 'paid')
+        d = inv._tbps_invoice_data()
+        self.assertEqual(len(d['payments']), 1)
+        self.assertEqual(d['payments'][0]['amount'], 1015.0)
+        self.assertEqual(d['total_payments'], 1015.0)
+        self.assertEqual(d['balance'], 0.0)

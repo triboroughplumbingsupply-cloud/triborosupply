@@ -39,14 +39,23 @@ class AccountMove(models.Model):
             for group in subtotal.get('tax_groups', []):
                 tax_groups.append({'name': group['group_name'], 'amount': group['tax_amount_currency']})
 
-        payments = []
+        # One row per payment: an invoice with several receivable lines (e.g. after a late
+        # surcharge) reconciles the same payment against each line, which the widget lists
+        # separately.
+        payments, by_payment = [], {}
         widget = self.sudo().invoice_payments_widget
         for vals in (widget or {}).get('content', []):
-            payments.append({
+            key = vals.get('account_payment_id') or vals.get('move_id') or vals.get('partial_id')
+            if key in by_payment:
+                by_payment[key]['amount'] += vals.get('amount', 0.0)
+                continue
+            row = {
                 'name': vals.get('journal_name') or vals.get('name') or '',
                 'date': vals.get('date'),
                 'amount': vals.get('amount', 0.0),
-            })
+            }
+            by_payment[key] = row
+            payments.append(row)
         total_payments = currency.round(self.amount_total - self.amount_residual)
         # Payments registered without a journal entry (journal has no outstanding account) stay
         # "in process" until the bank statement is matched. They are still money received.
